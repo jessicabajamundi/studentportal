@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Parent Profile - Parent Portal{% endblock %}
+
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1><i class="fas fa-id-card"></i> My Profile</h1>
+  </div>
+
+  <div class="info-card">
+    <div class="card-header">
+      <h2>Account Information</h2>
+      <form method="POST" action="{{ url_for('parent_profile') }}" style="margin-left:auto; display:flex; gap:.5rem; align-items:center;">
+        <input type="hidden" name="form" value="profile">
+        <button class="btn btn-sm btn-primary" type="submit"><i class="fas fa-save"></i> Save</button>
+      </form>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Avatar</label>
+        <img src="{{ url_for('static', filename='images/logo.png') if not me.avatar else '/' + me.avatar }}" alt="Avatar" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:2px solid #e5e7eb;">
+        <form method="POST" action="{{ url_for('upload_avatar') }}" enctype="multipart/form-data" style="margin-top:.5rem;">
+          <input type="file" name="avatar" accept="image/*" required>
+          <button class="btn btn-sm btn-primary" type="submit"><i class="fas fa-upload"></i> Upload</button>
+        </form>
+      </div>
+
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" value="{{ me.username }}" disabled>
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" form="" value="{{ me.email }}" disabled>
+      </div>
+
+      <div class="form-group">
+        <label>Phone</label>
+        <form id="profileForm" method="POST" action="{{ url_for('parent_profile') }}">
+          <input type="hidden" name="form" value="profile">
+          <input type="text" name="phone" value="{{ me.phone }}">
+        </form>
+      </div>
+
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Address</label>
+        <textarea name="address" form="profileForm">{{ me.address }}</textarea>
+      </div>
+
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Email</label>
+        <input type="email" name="email" value="{{ me.email }}" form="profileForm">
+      </div>
+    </div>
+  </div>
+
+  <div class="info-card" style="margin-top:1rem;">
+    <div class="card-header">
+      <h2>Children & Relationships</h2>
+    </div>
+
+    <form method="POST" action="{{ url_for('parent_profile') }}" class="login-form" style="margin-bottom:1rem;">
+      <input type="hidden" name="form" value="relation-add">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Student ID (or internal ID)</label>
+          <input type="text" name="student_id" placeholder="e.g., STEM25-0001" required>
+        </div>
+        <div class="form-group">
+          <label>Relation</label>
+          <select name="relation" required>
+            <option value="Parent">Parent</option>
+            <option value="Mother">Mother</option>
+            <option value="Father">Father</option>
+            <option value="Guardian">Guardian</option>
+            <option value="Sibling">Sibling</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary"><i class="fas fa-link"></i> Link Student</button>
+    </form>
+
+    {% if children %}
+    <div class="children-grid">
+      {% for c in children %}
+      <div class="child-card">
+        <div class="child-avatar"><i class="fas fa-user-graduate"></i></div>
+        <h3>{{ c.first_name }} {{ c.last_name }}</h3>
+        <p>{{ c.student_id }}</p>
+        <span class="badge badge-info">{{ c.relation or 'Linked' }}</span>
+        <div class="child-actions" style="margin-top:.5rem; display:flex; gap:.5rem;">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('view_child_grades', student_id=c.id) }}"><i class="fas fa-chart-line"></i> Grades</a>
+          <a class="btn btn-sm btn-info" href="{{ url_for('view_child_attendance', student_id=c.id) }}"><i class="fas fa-calendar-check"></i> Attendance</a>
+          <a class="btn btn-sm" href="{{ url_for('schedule') }}?student_id={{ c.id }}"><i class="fas fa-calendar-alt"></i> Schedule</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-users"></i>
+      <p>No linked students yet. Link a student above.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

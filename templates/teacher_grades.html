@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher - Grades{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-clipboard-check"></i> Record Grades</h1>
+    </div>
+
+    {% if message %}
+    <div class="alert alert-{{ message[0] }}">{{ message[1] }}</div>
+    {% endif %}
+
+    <!-- Grade Entry Card -->
+    <div class="info-card">
+        <div class="card-header">
+            <h2><i class="fas fa-edit"></i> Grade Entry Form</h2>
+        </div>
+
+        <form method="POST" id="gradeForm">
+            <!-- Search and Filter Section -->
+            <div class="form-grid" style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #eee;">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label><i class="fas fa-search"></i> Search Student</label>
+                    <input type="text" id="studentSearch" placeholder="Type name or ID..." onkeyup="filterStudents()"
+                        class="form-control">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-filter"></i> Grade Level</label>
+                    <select id="gradeLevelFilter" onchange="filterStudents()" class="form-control">
+                        <option value="">All Levels</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8">Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label><i class="fas fa-id-card"></i> Student</label>
+                    <select name="student_id" id="studentIdInput" required onchange="refreshTermOptions()"
+                        class="form-control">
+                        <option value="">Select Student</option>
+                        {% for st in students %}
+                        <option value="{{ st.student_id }}" data-level="{{ st.year_level }}">
+                            {{ st.student_id }} - {{ st.first_name }} {{ st.last_name }} (Grade {{ st.year_level }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-book"></i> Subject</label>
+                    <select name="subject_id" required class="form-control">
+                        <option value="">Select subject</option>
+                        {% for s in subjects %}
+                        <option value="{{ s.id }}">{{ s.subject_code }} - {{ s.subject_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-layer-group"></i> Term</label>
+                    <select name="term" id="termSelect" required class="form-control">
+                        <option value="Q1">Q1</option>
+                        <option value="Q2">Q2</option>
+                        <option value="Q3">Q3</option>
+                        <option value="Final">Final</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-graduation-cap"></i> Score (60-100)</label>
+                    <input type="text" name="score" required class="form-control" pattern="^(60|6[0-9]|[7-9][0-9]|100)(\.\d{1,2})?$" placeholder="Enter score (60-100)" title="Score must be between 60 and 100. Decimals allowed (e.g., 85.5).">
+                </div>
+
+                <div class="form-group">
+                    <label>School Year</label>
+                    <select name="school_year" required class="form-control">
+                        {% for y in range(2000, 2026) %}
+                        <option value="{{ y }}-{{ y + 1 }}">{{ y }}-{{ y + 1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Remarks</label>
+                    <select name="remarks" class="form-control">
+                        <option value="">-- Select remark --</option>
+                        <option value="Very Good">Very Good</option>
+                        <option value="Good">Good</option>
+                        <option value="Better luck next time">Better luck next time</option>
+                        <option value="Keep studying">Keep studying</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Needs improvement">Needs improvement</option>
+                        <option value="Outstanding">Outstanding</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary"><i class="fas fa-save"></i> Save Grade</button>
+            </div>
+        </form>
+    </div>
+
+    {% if recent %}
+    <div class="info-card">
+        <div class="card-header">
+            <h2><i class="fas fa-history"></i> Recent Entries</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Subject</th>
+                        <th>Term</th>
+                        <th>Score</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in recent %}
+                    <tr>
+                        <td><span class="badge badge-info">{{ r.student_username }}</span></td>
+                        <td>{{ r.first_name }} {{ r.last_name }}</td>
+                        <td>{{ r.subject_name }}</td>
+                        <td>{{ r.term }}</td>
+                        <td><span
+                                class="badge badge-{{ 'success' if r.score >= 85 else 'warning' if r.score >= 75 else 'danger' }}">{{
+                                r.score }}</span></td>
+                        <td>{{ r.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function filterStudents() {
+        const searchInput = document.getElementById('studentSearch').value.toLowerCase();
+        const levelFilter = document.getElementById('gradeLevelFilter').value;
+        const select = document.getElementById('studentIdInput');
+        const options = select.getElementsByTagName('option');
+
+        let firstVisible = null;
+
+        for (let i = 1; i < options.length; i++) { // Skip first "Select Student" option
+            const option = options[i];
+            const text = option.text.toLowerCase();
+            const level = option.getAttribute('data-level');
+
+            const matchesSearch = text.includes(searchInput);
+            const matchesLevel = !levelFilter || level === levelFilter;
+
+            if (matchesSearch && matchesLevel) {
+                option.style.display = "";
+                if (!firstVisible) firstVisible = option;
+            } else {
+                option.style.display = "none";
+            }
+        }
+
+        // Reset selection if current selection is hidden
+        if (select.value && select.options[select.selectedIndex].style.display === "none") {
+            select.value = "";
+        }
+    }
+
+    async function refreshTermOptions() {
+        const input = document.getElementById('studentIdInput');
+        const termSel = document.getElementById('termSelect');
+        const val = (input.value || '').trim();
+        if (!val) return;
+
+        // Try to get level from selected option data attribute first
+        const selectedOpt = input.options[input.selectedIndex];
+        let level = 'SHS';
+        if (selectedOpt && selectedOpt.getAttribute('data-level')) {
+            const lvl = parseInt(selectedOpt.getAttribute('data-level'));
+            if (lvl >= 7 && lvl <= 10) level = 'JHS';
+        } else {
+            // Fallback to API
+            try {
+                const res = await fetch(`/api/student/level?student_id=${encodeURIComponent(val)}`);
+                const data = await res.json();
+                level = (data.level || 'SHS').toUpperCase();
+            } catch (e) { /* ignore */ }
+        }
+
+        const terms = level === 'JHS' ? ['Q1', 'Q2', 'Q3', 'Final'] : ['Q1', 'Q2', 'Final'];
+        termSel.innerHTML = '';
+        terms.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t; opt.textContent = t; termSel.appendChild(opt);
+        });
+    }
+</script>
+{% endblock %}

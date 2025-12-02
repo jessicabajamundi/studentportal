@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Students - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h1><i class="fas fa-users"></i> Manage Students</h1>
+        <p>View and manage all students in the system</p>
+    </div>
+
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2><i class="fas fa-graduation-cap"></i> All Students</h2>
+            <div class="section-actions">
+                <span class="badge badge-info">{{ students|length }} Total Students</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Course</th>
+                        <th>Year & Section</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td><span class="badge badge-secondary">{{ student.student_id }}</span></td>
+                        <td>
+                            <div class="user-info">
+                                {% if student.avatar %}
+                                <img src="/{{ student.avatar }}" alt="Avatar" class="user-avatar-small">
+                                {% else %}
+                                <div class="user-avatar-small">{{ student.first_name[:1]|upper }}{{ student.last_name[:1]|upper }}</div>
+                                {% endif %}
+                                <span>{{ student.first_name }} {{ student.last_name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ student.email or 'N/A' }}</td>
+                        <td>
+                            {% if student.course_code %}
+                            <span class="badge badge-primary">{{ student.course_code }}</span>
+                            <small>{{ student.course_name }}</small>
+                            {% else %}
+                            <span class="text-muted">No Course</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-info">Year {{ student.year_level or 'N/A' }}</span>
+                            <span class="badge badge-outline">{{ student.section or 'N/A' }}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning" title="Edit Student">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            <i class="fas fa-users fa-2x mb-2"></i>
+                            <p>No students found in the system.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.badge-outline {
+    border: 1px solid #dee2e6;
+    background: transparent;
+    color: #495057;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+</style>
+{% endblock %}

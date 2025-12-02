@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule and Calendar - Student Portal System{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<style>
+/* Calendar specific styles */
+#calendar {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    min-height: 400px;
+}
+
+.calendar-section {
+    margin-bottom: 2rem;
+}
+
+.schedule-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 1.25rem 1.5rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .schedule-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Weekly timetable table */
+.weekly-schedule table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.weekly-schedule thead th {
+    font-size: 0.8rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.weekly-schedule tbody tr:nth-child(even) td:first-child {
+    background: #f3f4f6 !important;
+}
+
+.weekly-schedule tbody tr:hover td {
+    background-color: #f9fafb;
+}
+
+.weekly-schedule td,
+.weekly-schedule th {
+    border: 1px solid #e5e7eb !important;
+}
+
+.weekly-schedule .time-cell {
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: #4b5563;
+    white-space: nowrap;
+}
+
+.weekly-schedule .class-cell {
+    font-size: 0.78rem;
+    vertical-align: top;
+    min-height: 38px;
+}
+
+.weekly-schedule .class-chip {
+    border-radius: 6px;
+    padding: 4px 6px;
+}
+
+/* Enhanced Calendar Styles */
+.calendar-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.calendar-header h3 {
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calendar-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.calendar-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e5e7eb;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-btn:hover {
+    background: #f8fafc;
+    border-color: var(--primary-color);
+}
+
+.calendar-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+#calendar {
+    min-height: 600px;
+}
+
+/* Exam Schedule Section */
+.exam-schedule-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.exam-schedule-section h3 {
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.exam-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.exam-card {
+    background: #fef2f2;
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid var(--danger-color);
+    transition: transform 0.2s ease;
+}
+
+.exam-card:hover {
+    transform: translateY(-2px);
+}
+
+.exam-card h4 {
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.exam-type {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: var(--danger-color);
+    color: white;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.exam-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.exam-date {
+    font-weight: 600;
+    color: var(--danger-color);
+}
+
+/* School Events Section */
+.events-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.events-section h3 {
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.event-item {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid var(--info-color);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: center;
+}
+
+.event-title {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.25rem;
+}
+
+.event-type {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.event-type.holiday {
+    background: var(--success-color);
+    color: white;
+}
+
+.event-type.activity {
+    background: var(--info-color);
+    color: white;
+}
+
+.event-type.meeting {
+    background: var(--text-light);
+    color: white;
+}
+
+.event-type.deadline {
+    background: var(--warning-color);
+    color: white;
+}
+
+.event-type.other {
+    background: var(--primary-color);
+    color: white;
+}
+
+.event-details {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+/* Reminders Section */
+.reminders-section {
+    background: #fffbeb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    border: 1px solid #fed7aa;
+}
+
+.reminders-section h3 {
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reminder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.reminder-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid var(--warning-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reminder-content {
+    flex: 1;
+}
+
+.reminder-title {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.25rem;
+}
+
+.reminder-date {
+    font-size: 0.9rem;
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.reminder-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.reminder-btn {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.reminder-btn:hover {
+    background: #f8fafc;
+}
+
+.reminder-btn.delete {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.reminder-btn.delete:hover {
+    background: var(--danger-color);
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-alt"></i> Class Schedule</h1>
+    </div>
+
+    <!-- Weekly Schedule (Timetable View) -->
+    {% if schedules %}
+    <div class="schedule-container">
+        <div class="weekly-schedule">
+            {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm mb-0">
+                    <thead class="text-center align-middle">
+                        <tr>
+                            <th style="width: 90px; background:#f3f4f6;">TIME</th>
+                            {% for day in days %}
+                            <th style="background:#f3f4f6;">{{ day|upper }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {# 30-minute slots from 7:00 to 19:00 #}
+                        {% for h in range(7, 19) %}
+                            {% for m in [0, 30] %}
+                                {% set slot_start = h * 60 + m %}
+                                {% set slot_end = slot_start + 30 %}
+                                <tr>
+                                    <td class="text-center align-middle time-cell" style="background:#f9fafb;">
+                                        {% set display_hour = h %}
+                                        {% set period = 'AM' if display_hour < 12 else 'PM' %}
+                                        {% set display_hour_12 = display_hour % 12 if display_hour % 12 != 0 else 12 %}
+                                        {{ "%d:%02d %s"|format(display_hour_12, m, period) }}
+                                    </td>
+
+                                    {% for day in days %}
+                                        {% set cell_classes = [] %}
+                                        {% set cell_subject = none %}
+                                        {% set cell_room = none %}
+                                        {% set cell_teacher = none %}
+
+                                        {% for s in schedules %}
+                                            {% if s.day_of_week == day %}
+                                                {% set sh = s.start_time.total_seconds() // 60 %}
+                                                {% set eh = s.end_time.total_seconds() // 60 %}
+                                                {% if sh <= slot_start and eh > slot_start %}
+                                                    {% set _ = cell_classes.append('bg-primary text-white') %}
+                                                    {% set cell_subject = s.subject_code ~ ' - ' ~ s.subject_name %}
+                                                    {% set cell_room = s.room %}
+                                                    {% if s.teacher_first %}
+                                                        {% set cell_teacher = s.teacher_first ~ ' ' ~ s.teacher_last %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        <td class="p-1 class-cell {{ ' '.join(cell_classes) }}">
+                                            {% if cell_subject %}
+                                                <div class="class-chip">
+                                                    <div style="font-weight:600;">{{ cell_subject }}</div>
+                                                    {% if cell_room %}
+                                                        <div>RM {{ cell_room }}</div>
+                                                    {% endif %}
+                                                    {% if cell_teacher %}
+                                                        <div>{{ cell_teacher }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Calendar script loading...');
+    const calendarEl = document.getElementById('calendar');
+    
+    if (!calendarEl) {
+        console.error('Calendar element not found!');
+        return;
+    }
+    
+    console.log('Calendar element found, initializing FullCalendar...');
+    
+    try {
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'month',
+            headerToolbar: false, // We use our own controls
+            height: 'auto',
+            events: '/api/calendar/events',
+            eventClick: function(info) {
+            // Show event details
+            const props = info.event.extendedProps;
+            let details = `<h5>${info.event.title}</h5>`;
+            
+            if (props.type === 'exam') {
+                details += `
+                    <p><strong>Type:</strong> ${props.exam_type}</p>
+                    <p><strong>Subject:</strong> ${props.subject}</p>
+                    ${props.room ? `<p><strong>Room:</strong> ${props.room}</p>` : ''}
+                    ${props.description ? `<p><strong>Description:</strong> ${props.description}</p>` : ''}
+                `;
+            } else {
+                details += `
+                    <p><strong>Type:</strong> ${props.event_type}</p>
+                    ${props.location ? `<p><strong>Location:</strong> ${props.location}</p>` : ''}
+                    ${props.description ? `<p><strong>Description:</strong> ${props.description}</p>` : ''}
+                `;
+            }
+            
+            // Create modal or alert
+            alert(details);
+        }
+    });
+    
+    calendar.render();
+        console.log('Calendar rendered successfully!');
+        
+        // Store calendar instance for button controls
+        window.calendar = calendar;
+    } catch (error) {
+        console.error('Error initializing calendar:', error);
+    }
+});
+
+function changeView(view) {
+    if (window.calendar) {
+        window.calendar.changeView(view);
+        
+        // Update active button
+        document.querySelectorAll('.calendar-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+    }
+}
+
+function goToToday() {
+    if (window.calendar) {
+        window.calendar.today();
+    }
+}
+
+function setReminderFromData(button) {
+    const eventId = button.dataset.eventId;
+    const eventType = button.dataset.eventType;
+    const eventDate = button.dataset.eventDate;
+    
+    const reminderDate = prompt('Set reminder date (YYYY-MM-DD):', eventDate);
+    if (reminderDate) {
+        fetch('/api/reminders/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                event_id: eventId,
+                event_type: eventType,
+                reminder_date: reminderDate
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Reminder set successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to set reminder');
+        });
+    }
+}
+
+function deleteReminderFromData(button) {
+    const reminderId = button.dataset.reminderId;
+    
+    if (confirm('Are you sure you want to delete this reminder?')) {
+        fetch(`/api/reminders/${reminderId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to delete reminder');
+        });
+    }
+}
+
+// Keep the old functions for backward compatibility
+function setReminder(eventId, eventType, eventDate) {
+    const reminderDate = prompt('Set reminder date (YYYY-MM-DD):', eventDate);
+    if (reminderDate) {
+        fetch('/api/reminders/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                event_id: eventId,
+                event_type: eventType,
+                reminder_date: reminderDate
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Reminder set successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to set reminder');
+        });
+    }
+}
+
+function deleteReminder(reminderId) {
+    if (confirm('Are you sure you want to delete this reminder?')) {
+        fetch(`/api/reminders/${reminderId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to delete reminder');
+        });
+    }
+}
+</script>
+{% endblock %}

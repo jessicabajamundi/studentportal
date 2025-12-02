@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Enrollment - Student Portal System{% endblock %}
+
+{% block extra_js %}
+<script>
+async function enrollSubject(subjectId) {
+    try {
+        const response = await fetch('{{ url_for("enroll_subject") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ subject_id: subjectId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Successfully enrolled!');
+            location.reload();
+        } else {
+            alert(data.message || 'Failed to enroll');
+        }
+    } catch (error) {
+        alert('An error occurred. Please try again.');
+    }
+}
+
+async function dropSubject(enrollmentId) {
+    if (!confirm('Are you sure you want to drop this subject?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('{{ url_for("drop_subject") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ enrollment_id: enrollmentId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Subject dropped successfully!');
+            location.reload();
+        } else {
+            alert(data.message || 'Failed to drop subject');
+        }
+    } catch (error) {
+        alert('An error occurred. Please try again.');
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-book"></i> Enrollment and Registration</h1>
+        <p>Course: {{ student.course_name }}</p>
+    </div>
+
+    <!-- Enrolled Subjects -->
+    {% if enrolled_subjects %}
+    <div class="dashboard-section">
+        <h2><i class="fas fa-check-circle"></i> Currently Enrolled Subjects</h2>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Units</th>
+                        <th>Enrolled Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrolled_subjects %}
+                    <tr>
+                        <td>{{ enrollment.subject_code }}</td>
+                        <td>{{ enrollment.subject_name }}</td>
+                        <td>{{ enrollment.units }}</td>
+                        <td>{{ enrollment.enrolled_at }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="dropSubject({{ enrollment.id }})">
+                                <i class="fas fa-times"></i> Drop
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Available Subjects -->
+    {% if available_subjects %}
+    <div class="dashboard-section">
+        <h2><i class="fas fa-list"></i> Available Subjects</h2>
+        <div class="subjects-grid">
+            {% for subject in available_subjects %}
+            <div class="subject-card">
+                <div class="subject-header">
+                    <h3>{{ subject.subject_name }}</h3>
+                    <span class="badge badge-primary">{{ subject.subject_code }}</span>
+                </div>
+                <div class="subject-details">
+                    <p><i class="fas fa-book"></i> Units: {{ subject.units }}</p>
+                    {% if subject.day_of_week %}
+                    <p><i class="fas fa-calendar"></i> {{ subject.day_of_week }}</p>
+                    <p><i class="fas fa-clock"></i> {{ subject.start_time }} - {{ subject.end_time }}</p>
+                    {% endif %}
+                    {% if subject.room %}
+                    <p><i class="fas fa-door-open"></i> Room: {{ subject.room }}</p>
+                    {% endif %}
+                </div>
+                <button class="btn btn-primary btn-block" onclick="enrollSubject({{ subject.id }})">
+                    <i class="fas fa-plus"></i> Enroll
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

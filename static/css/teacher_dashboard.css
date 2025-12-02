@@ -1,0 +1,191 @@
+/* Teacher Dashboard Specific Styles */
+.teacher-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Stats Row */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.stat-box {
+    background: white;
+    border-radius: 4px;
+    padding: 1rem;
+    color: white;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.stat-box:hover {
+    transform: translateY(-2px);
+}
+
+.stat-box h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1;
+}
+
+.stat-box p {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.25rem;
+    opacity: 0.9;
+}
+
+/* Specific Colors matching the reference image */
+.stat-yellow {
+    background-color: #d4ac0d;
+}
+
+/* Mustard Yellow */
+.stat-teal {
+    background-color: #1abc9c;
+}
+
+/* Teal */
+.stat-green {
+    background-color: #2ecc71;
+}
+
+/* Green */
+.stat-blue {
+    background-color: #3498db;
+}
+
+/* Blue */
+.stat-lime {
+    background-color: #9acd32;
+}
+
+/* Lime Green */
+.stat-orange {
+    background-color: #e67e22;
+}
+
+/* Orange */
+.stat-purple {
+    background-color: #9b59b6;
+}
+
+/* Purple */
+.stat-red {
+    background-color: #e74c3c;
+}
+
+/* Red */
+
+/* Charts Row */
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-card {
+    background: white;
+    border-radius: 4px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+.chart-header h4 {
+    color: #7f8c8d;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Lists Row */
+.lists-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.list-card {
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.list-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-header h5 {
+    margin: 0;
+    color: #7f8c8d;
+    font-weight: 600;
+}
+
+.list-content {
+    padding: 0;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 1rem;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.list-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ecf0f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #95a5a6;
+}
+
+.list-info h6 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.list-info p {
+    margin: 0;
+    color: #95a5a6;
+    font-size: 0.8rem;
+}

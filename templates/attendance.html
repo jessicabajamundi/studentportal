@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Monitoring - Student Portal System{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-check"></i> Attendance Monitoring</h1>
+    </div>
+
+    {% if analytics %}
+    <!-- Attendance Analytics Dashboard -->
+    <div class="attendance-analytics">
+        <!-- Attendance Alerts -->
+        {% if analytics.alerts %}
+        <div class="alerts-section">
+            {% for alert in analytics.alerts %}
+            <div class="alert alert-{{ alert.type }} alert-dismissible">
+                <i class="fas fa-{{ 'exclamation-triangle' if alert.type == 'warning' else 'times-circle' if alert.type == 'danger' else 'info-circle' }}"></i>
+                {{ alert.message }}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Summary Cards -->
+        <div class="analytics-grid">
+            <div class="analytics-card attendance-rate-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-percentage"></i> Attendance Rate</h3>
+                </div>
+                <div class="card-content">
+                    <div class="rate-value">{{ analytics.summary.attendance_rate }}%</div>
+                    <div class="rate-bar">
+                        <div class="rate-fill" style="width: {{ analytics.summary.attendance_rate }}%"></div>
+                    </div>
+                    <div class="rate-label">Overall Attendance</div>
+                </div>
+            </div>
+
+            <div class="analytics-card present-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-check-circle"></i> Present</h3>
+                </div>
+                <div class="card-content">
+                    <div class="stat-value">{{ analytics.summary.present }}</div>
+                    <div class="stat-label">Days Present</div>
+                </div>
+            </div>
+
+            <div class="analytics-card absent-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-times-circle"></i> Absent</h3>
+                </div>
+                <div class="card-content">
+                    <div class="stat-value">{{ analytics.summary.absent }}</div>
+                    <div class="stat-label">Days Absent</div>
+                </div>
+            </div>
+
+            <div class="analytics-card late-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-clock"></i> Late</h3>
+                </div>
+                <div class="card-content">
+                    <div class="stat-value">{{ analytics.summary.late }}</div>
+                    <div class="stat-label">Times Late</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trends -->
+        {% if analytics.monthly_trends %}
+        <div class="monthly-trends-section">
+            <h3><i class="fas fa-chart-line"></i> Monthly Attendance Trends</h3>
+            <div class="trends-chart">
+                {% for month, data in analytics.monthly_trends.items() %}
+                <div class="trend-item">
+                    <div class="trend-month">{{ month }}</div>
+                    <div class="trend-rate">{{ data.attendance_rate }}%</div>
+                    <div class="trend-bar">
+                        <div class="trend-fill attendance-fill" style="width: {{ data.attendance_rate }}%"></div>
+                    </div>
+                    <div class="trend-details">
+                        <span class="present-count">{{ data.present }}P</span>
+                        <span class="absent-count">{{ data.absent }}A</span>
+                        <span class="late-count">{{ data.late }}L</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Subject-wise Attendance -->
+        {% if analytics.subject_attendance %}
+        <div class="subject-attendance-section">
+            <h3><i class="fas fa-book"></i> Subject-wise Attendance</h3>
+            <div class="subject-grid">
+                {% for subject, data in analytics.subject_attendance.items() %}
+                <div class="subject-card">
+                    <div class="subject-header">
+                        <h4>{{ subject }}</h4>
+                        <div class="subject-rate">{{ data.attendance_rate }}%</div>
+                    </div>
+                    <div class="subject-bar">
+                        <div class="subject-fill" style="width: {{ data.attendance_rate }}%"></div>
+                    </div>
+                    <div class="subject-stats">
+                        <span class="present-stat">{{ data.present }} Present</span>
+                        <span class="absent-stat">{{ data.absent }} Absent</span>
+                        <span class="late-stat">{{ data.late }} Late</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Absences -->
+        {% if analytics.recent_absences %}
+        <div class="recent-absences-section">
+            <h3><i class="fas fa-exclamation-triangle"></i> Recent Absences</h3>
+            <div class="absences-list">
+                {% for absence in analytics.recent_absences %}
+                <div class="absence-item">
+                    <div class="absence-date">{{ absence.date.strftime('%b %d, %Y') }}</div>
+                    <div class="absence-subject">{{ absence.subject_name or 'General' }}</div>
+                    <div class="absence-remarks">{{ absence.remarks or 'No remarks' }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if attendance_records %}
+    <!-- Detailed Attendance Records -->
+    <div class="attendance-records-section">
+        <h3><i class="fas fa-list"></i> Recent Attendance Records</h3>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in attendance_records %}
+                    <tr>
+                        <td>{{ record.date.strftime('%b %d, %Y') }}</td>
+                        <td>{{ record.subject_name or 'General' }}</td>
+                        <td>
+                            <span class="status-badge status-{{ record.status }}">
+                                <i class="fas fa-{{ 
+                                    'check' if record.status == 'present' 
+                                    else 'times' if record.status == 'absent' 
+                                    else 'clock' if record.status == 'late' 
+                                    else 'file-alt' 
+                                }}"></i>
+                                {{ record.status.title() }}
+                            </span>
+                        </td>
+                        <td>{{ record.remarks or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+                <p>Total Days</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if children %}
+    <!-- Parent View - Select Child -->
+    <div class="children-grid">
+        {% for child in children %}
+        <div class="child-card">
+            <div class="child-avatar">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h3>{{ child.first_name }} {{ child.last_name }}</h3>
+            <p>{{ child.student_id }}</p>
+            <a href="{{ url_for('view_child_attendance', student_id=child.id) }}" class="btn btn-primary btn-block">
+                <i class="fas fa-calendar-check"></i> View Attendance
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif not attendance_records and not analytics %}
+    <div class="empty-state">
+        <i class="fas fa-calendar-check"></i>
+        <p>No attendance records available</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

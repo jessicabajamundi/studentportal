@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h1><i class="fas fa-chalkboard-teacher"></i> Teacher Dashboard</h1>
+        <p>Manage grades, attendance, and schedules.</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <a class="stat-card stat-primary" href="{{ url_for('teacher_grades') }}">
+            <div class="stat-icon"><i class="fas fa-clipboard-check"></i></div>
+            <div class="stat-content">
+                <h3>Grades</h3>
+                <p>Record and update student grades</p>
+            </div>
+        </a>
+
+        <a class="stat-card stat-info" href="{{ url_for('teacher_attendance') }}">
+            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-content">
+                <h3>Attendance</h3>
+                <p>Mark daily attendance</p>
+            </div>
+        </a>
+
+        <a class="stat-card stat-success" href="{{ url_for('teacher_schedule') }}">
+            <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+            <div class="stat-content">
+                <h3>Schedule</h3>
+                <p>Create class schedules</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="stat-card stat-warning">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-content">
+                <h3>{{ total_students }}</h3>
+                <p>Total Students</p>
+            </div>
+        </div>
+        <div class="stat-card stat-secondary">
+            <div class="stat-icon"><i class="fas fa-book"></i></div>
+            <div class="stat-content">
+                <h3>{{ total_subjects }}</h3>
+                <p>Subjects</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

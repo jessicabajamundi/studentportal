@@ -1,0 +1,89 @@
+{% set data = form_data if form_data else {} %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register as Parent - Student Portal System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="modern-register-container">
+        <!-- Left Panel -->
+        <div class="register-left-panel">
+            <div class="shape shape-dots"></div>
+            <div class="quote-container">
+                <i class="fas fa-quote-left quote-icon"></i>
+                <h1 class="quote-text">Good Morning Parents!!</h1>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="register-right-panel">
+            <div class="top-nav-link">
+                Already have an account? <a href="{{ url_for('login') }}">Sign in here!</a>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"
+                    style="max-width: 150px; height: auto;">
+            </div>
+
+            <h2 class="register-title">Create Parent Account</h2>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('register_parent') }}">
+                <div class="register-form-grid">
+                    <div class="form-group-modern">
+                        <label>Username</label>
+                        <input type="text" name="username" value="{{ data.get('username', '') }}"
+                            placeholder="username123" required>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Email</label>
+                        <input type="email" name="email" value="{{ data.get('email', '') }}"
+                            placeholder="email@gmail.com" required>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Create Password</label>
+                        <input type="password" name="password" placeholder="••••••••••••" required>
+                    </div>
+                    <div class="form-group-modern">
+                        <label>Confirm Password</label>
+                        <input type="password" name="confirm_password" placeholder="••••••••••••" required>
+                    </div>
+
+                    <div class="form-group-modern full-width">
+                        <label>Child Student ID (Optional)</label>
+                        <input type="text" name="child_student_id" value="{{ data.get('child_student_id', '') }}"
+                            placeholder="e.g., STEM25-0001">
+                    </div>
+                </div>
+
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms" style="margin:0; font-weight:600;">Creating your account and you accepting <a
+                            href="#" style="color:#2D3250; text-decoration:underline;">Terms & Conditions</a>.</label>
+                </div>
+
+                <button type="submit" class="btn-register-modern">Register Parent</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

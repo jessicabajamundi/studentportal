@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+
+{% block title %}Student Information - Student Portal System{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-user"></i> {% if session.user_role == 'student' %}My Profile{% else %}Student Information{%
+            endif %}</h1>
+    </div>
+
+    {% if student %}
+    <!-- Single Student View -->
+    <div class="info-card">
+        <div class="card-header">
+            <h2>Student Profile</h2>
+            {% if session.user_role == 'student' %}
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <form method="POST" action="{{ url_for('upload_avatar') }}" enctype="multipart/form-data">
+                    <div class="form-group" style="margin:0;">
+                        <label style="margin:0; font-weight:600; display:none;"><i class="fas fa-image"></i> Profile
+                            Image</label>
+                        <input type="file" name="avatar" accept="image/*" style="display:none;" id="avatarInput"
+                            onchange="this.form.submit()">
+                        <button type="button" class="btn btn-sm btn-secondary"
+                            onclick="document.getElementById('avatarInput').click()">
+                            <i class="fas fa-camera"></i> Change Photo
+                        </button>
+                    </div>
+                </form>
+                <button class="btn btn-sm btn-primary" onclick="toggleEdit()">
+                    <i class="fas fa-edit"></i> Edit Information
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="POST" action="{{ url_for('update_student_info') }}" id="studentForm">
+            <input type="hidden" name="student_id" value="{{ student.id }}">
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <img src="{{ url_for('static', filename='images/logo.png') if not student.avatar else '/' + student.avatar }}"
+                    alt="Avatar"
+                    style="width:150px; height:150px; object-fit:cover; border-radius:50%; border:4px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h2 style="margin-top: 1rem; color: var(--dark-color);">{{ student.first_name }} {{ student.last_name }}
+                </h2>
+                <p style="color: var(--text-light);">{{ student.student_id }}</p>
+            </div>
+
+            <!-- Academic Details -->
+            <div class="dashboard-section">
+                <h3
+                    style="color: #f59e0b; border-bottom: 2px solid #f59e0b; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+                    <i class="fas fa-university"></i> Academic Details
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Student Number</label>
+                        <input type="text" value="{{ student.student_id }}" disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>LRN</label>
+                        <input type="text" name="lrn" value="{{ student.lrn or '' }}" disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Branch</label>
+                        <input type="text" name="branch" value="{{ student.branch or '' }}" disabled>
+                    </div>
+                    <!-- Satellite and College removed -->
+                    <div class="form-group">
+                        <label>Course</label>
+                        <input type="text" value="{{ student.course_name }}" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Year Level</label>
+                        <input type="text" value="{{ student.year_level }}" disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Semester</label>
+                        <input type="text" name="current_semester" value="{{ student.current_semester or '' }}"
+                            disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Section</label>
+                        <input type="text" value="{{ student.section or '' }}" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="dashboard-section">
+                <h3
+                    style="color: #f59e0b; border-bottom: 2px solid #f59e0b; padding-bottom: 0.5rem; margin-bottom: 1.5rem; margin-top: 2rem;">
+                    <i class="fas fa-user"></i> Personal Information
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" value="{{ student.first_name }}" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Middle Name</label>
+                        <input type="text" value="{{ student.middle_name or '' }}" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" value="{{ student.last_name }}" disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Extension Name</label>
+                        <input type="text" name="extension_name" value="{{ student.extension_name or '' }}" disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Mobile No</label>
+                        <input type="text" name="phone" value="{{ student.phone or '' }}" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="text" value="{{ student.email or '' }}" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Sex</label>
+                        <input type="text" value="{{ student.gender or '' }}" disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Blood Group</label>
+                        <select name="blood_group" disabled>
+                            <option value="">Select</option>
+                            {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                            <option value="{{ bg }}" {% if student.blood_group==bg %}selected{% endif %}>{{ bg }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Birthday</label>
+                        <input type="text" value="{{ student.date_of_birth or '' }}" disabled>
+                    </div>
+                    <div class="form-group editable" style="grid-column: 1 / -1;">
+                        <label>Complete Address</label>
+                        <input type="text" name="address" value="{{ student.address or '' }}" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parent Information -->
+            <div class="dashboard-section">
+                <h3
+                    style="color: #f59e0b; border-bottom: 2px solid #f59e0b; padding-bottom: 0.5rem; margin-bottom: 1.5rem; margin-top: 2rem;">
+                    <i class="fas fa-users"></i> Parent Information
+                </h3>
+
+                <h4 style="margin-bottom: 1rem; color: var(--text-light);">Guardian Details</h4>
+                <div class="form-grid">
+                    <div class="form-group editable">
+                        <label>Guardian Name</label>
+                        <input type="text" name="guardian_name" value="{{ student.guardian_name or '' }}" disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Relation</label>
+                        <input type="text" name="guardian_relation" value="{{ student.guardian_relation or '' }}"
+                            disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Guardian Email</label>
+                        <input type="email" name="guardian_email" value="{{ student.guardian_email or '' }}" disabled>
+                    </div>
+                    <div class="form-group editable" style="grid-column: 1 / -1;">
+                        <label>Guardian Address</label>
+                        <input type="text" name="guardian_address" value="{{ student.guardian_address or '' }}"
+                            disabled>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom: 1rem; margin-top: 1.5rem; color: var(--text-light);">Father's Details</h4>
+                <div class="form-grid">
+                    <div class="form-group editable">
+                        <label>First Name</label>
+                        <input type="text" name="father_first_name" value="{{ student.father_first_name or '' }}"
+                            disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Middle Name</label>
+                        <input type="text" name="father_middle_name" value="{{ student.father_middle_name or '' }}"
+                            disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Last Name</label>
+                        <input type="text" name="father_last_name" value="{{ student.father_last_name or '' }}"
+                            disabled>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom: 1rem; margin-top: 1.5rem; color: var(--text-light);">Mother's Details</h4>
+                <div class="form-grid">
+                    <div class="form-group editable">
+                        <label>First Name</label>
+                        <input type="text" name="mother_first_name" value="{{ student.mother_first_name or '' }}"
+                            disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Middle Name</label>
+                        <input type="text" name="mother_middle_name" value="{{ student.mother_middle_name or '' }}"
+                            disabled>
+                    </div>
+                    <div class="form-group editable">
+                        <label>Last Name</label>
+                        <input type="text" name="mother_last_name" value="{{ student.mother_last_name or '' }}"
+                            disabled>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions" id="editActions"
+                style="display: none; justify-content: flex-end; position: sticky; bottom: 20px; background: white; padding: 1rem; border-top: 1px solid #eee; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); border-radius: 8px;">
+                <button type="button" class="btn btn-secondary" onclick="cancelEdit()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif students %}
+    <!-- Teacher/Admin View - Student List with Search -->
+    <div class="search-section" style="margin-bottom: 2rem;">
+        <div class="search-card">
+            <h3><i class="fas fa-search"></i> Student Search</h3>
+            <form method="GET" class="search-form">
+                <div class="search-grid">
+                    <div class="form-group">
+                        <label>Search Students</label>
+                        <input type="text" name="search" value="{{ search_query or '' }}" 
+                               placeholder="Search by name, student ID..." 
+                               class="search-input" autocomplete="off">
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Course</label>
+                        <select name="course" class="form-control">
+                            <option value="">All Courses</option>
+                            {% for course in courses %}
+                            <option value="{{ course.id }}" {% if course_filter|string == course.id|string %}selected{% endif %}>
+                                {{ course.course_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Year Level</label>
+                        <select name="year" class="form-control">
+                            <option value="">All Years</option>
+                            {% for year in range(1, 6) %}
+                            <option value="{{ year }}" {% if year_filter|string == year|string %}selected{% endif %}>
+                                Year {{ year }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group" style="align-self: flex-end;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="students-grid">
+        {% for student in students %}
+        <div class="student-card">
+            <div class="student-header">
+                <div class="student-avatar">
+                    <img src="{{ url_for('static', filename='images/logo.png') if not student.avatar else '/' + student.avatar }}" 
+                         alt="{{ student.first_name }} {{ student.last_name }}">
+                </div>
+                <div class="student-info">
+                    <h4>{{ student.first_name }} {{ student.last_name }}</h4>
+                    <p class="student-id">{{ student.student_id }}</p>
+                    <span class="badge badge-primary">{{ student.course_name or 'No Course' }}</span>
+                </div>
+            </div>
+            <div class="student-details">
+                <div class="detail-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>{{ student.email or 'No email' }}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Year {{ student.year_level }} - Section {{ student.section or 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-phone"></i>
+                    <span>{{ student.phone or 'No phone' }}</span>
+                </div>
+            </div>
+            <div class="student-actions">
+                <a href="#" class="btn btn-sm btn-info" onclick="viewStudentDetails({{ student.id }})">
+                    <i class="fas fa-eye"></i> View Details
+                </a>
+                {% if session.user_role == 'admin' %}
+                <a href="#" class="btn btn-sm btn-warning">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not students %}
+    <div class="no-results">
+        <i class="fas fa-search"></i>
+        <h3>No students found</h3>
+        <p>Try adjusting your search criteria or filters</p>
+    </div>
+    {% endif %}
+
+    {% elif children %}
+    <!-- Parent View - Multiple Children -->
+    <div class="children-list">
+        {% for child in children %}
+        <div class="info-card">
+            <div class="card-header">
+                <h2>{{ child.first_name }} {{ child.last_name }}</h2>
+                <span class="badge badge-primary">{{ child.course_name }}</span>
+            </div>
+            <!-- Reuse similar structure for read-only view if needed, or keep simple -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <input type="text" value="{{ child.student_id }}" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Course</label>
+                    <input type="text" value="{{ child.course_name }}" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Year Level</label>
+                    <input type="text" value="Year {{ child.year_level }}" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Section</label>
+                    <input type="text" value="{{ child.section or 'N/A' }}" disabled>
+                </div>
+            </div>
+            <div style="margin-top: 1rem; text-align: right;">
+                <a href="#" class="btn btn-sm btn-info">View Full Profile</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function toggleEdit() {
+        const editableFields = document.querySelectorAll('.editable input, .editable select, .editable textarea');
+        const editActions = document.getElementById('editActions');
+
+        editableFields.forEach(field => {
+            field.disabled = !field.disabled;
+        });
+
+        editActions.style.display = editActions.style.display === 'none' ? 'flex' : 'none';
+
+        // Scroll to bottom to show actions
+        if (editActions.style.display === 'flex') {
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+    }
+
+    function cancelEdit() {
+        location.reload();
+    }
+
+    // Search autocomplete functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('.search-input');
+        const searchResults = document.getElementById('searchResults');
+        
+        if (searchInput && searchResults) {
+            let searchTimeout;
+            
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+                
+                if (query.length < 2) {
+                    searchResults.innerHTML = '';
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                searchTimeout = setTimeout(() => {
+                    fetch(`/api/student/search?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            searchResults.innerHTML = '';
+                            if (data.length > 0) {
+                                searchResults.style.display = 'block';
+                                data.forEach(student => {
+                                    const item = document.createElement('div');
+                                    item.className = 'search-result-item';
+                                    item.innerHTML = `
+                                        <div class="student-result">
+                                            <strong>${student.first_name} ${student.last_name}</strong>
+                                            <span class="student-id-result">${student.student_id}</span>
+                                            <span class="course-result">${student.course_name || 'No Course'}</span>
+                                        </div>
+                                    `;
+                                    item.addEventListener('click', () => {
+                                        searchInput.value = `${student.first_name} ${student.last_name}`;
+                                        searchResults.style.display = 'none';
+                                        searchInput.form.submit();
+                                    });
+                                    searchResults.appendChild(item);
+                                });
+                            } else {
+                                searchResults.style.display = 'none';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Search error:', error);
+                            searchResults.style.display = 'none';
+                        });
+                }, 300);
+            });
+            
+            // Hide results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+    });
+
+    function viewStudentDetails(studentId) {
+        // This could open a modal or navigate to detailed view
+        window.location.href = `/student/info?student_id=${studentId}`;
+    }
+</script>
+{% endblock %}

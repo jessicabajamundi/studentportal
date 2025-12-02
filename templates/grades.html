@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Grades and Report Card - Student Portal System{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-chart-line"></i> Grades and Report Card</h1>
+    </div>
+
+    {% if analytics %}
+    <!-- Grade Analytics Dashboard -->
+    <div class="analytics-dashboard">
+        <div class="analytics-grid">
+            <!-- GPA Card -->
+            <div class="analytics-card gpa-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-graduation-cap"></i> Overall GPA</h3>
+                </div>
+                <div class="card-content">
+                    <div class="gpa-value">{{ analytics.overall_gpa or analytics.gpa or 'N/A' }}</div>
+                    <div class="gpa-label">Grade Point Average</div>
+                </div>
+            </div>
+
+            <!-- Average Score -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-bar"></i> Average Score</h3>
+                </div>
+                <div class="card-content">
+                    <div class="score-value">{{ analytics.average_score or 'N/A' }}</div>
+                    <div class="score-label">Overall Average</div>
+                </div>
+            </div>
+
+            <!-- Total Subjects -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-book"></i> Total Subjects</h3>
+                </div>
+                <div class="card-content">
+                    <div class="subjects-value">{{ analytics.total_subjects }}</div>
+                    <div class="subjects-label">Enrolled Subjects</div>
+                </div>
+            </div>
+
+            <!-- Grade Range -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-area"></i> Grade Range</h3>
+                </div>
+                <div class="card-content">
+                    <div class="grade-range">
+                        <div class="highest">Highest: {{ analytics.highest_grade or 'N/A' }}</div>
+                        <div class="lowest">Lowest: {{ analytics.lowest_grade or 'N/A' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grade Trends Chart -->
+        {% if analytics.grade_trends %}
+        <div class="trends-section">
+            <h3><i class="fas fa-chart-line"></i> Grade Trends</h3>
+            <div class="trends-chart">
+                {% for trend in analytics.grade_trends %}
+                <div class="trend-item">
+                    <div class="trend-term">{{ trend.term }}</div>
+                    <div class="trend-score">{{ trend.average }}</div>
+                    <div class="trend-bar">
+                        <div class="trend-fill" style="width: {{ trend.average }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Grade Distribution -->
+        {% if analytics.grade_distribution %}
+        <div class="distribution-section">
+            <h3><i class="fas fa-chart-pie"></i> Grade Distribution</h3>
+            <div class="distribution-grid">
+                {% for category, count in analytics.grade_distribution.items() %}
+                <div class="distribution-item">
+                    <div class="category-label">{{ category.replace('_', ' ').title() }}</div>
+                    <div class="category-bar">
+                        <div class="category-fill" style="width: {{ (count / analytics.total_subjects * 100) if analytics.total_subjects > 0 else 0 }}%"></div>
+                    </div>
+                    <div class="category-count">{{ count }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if grade_entries %}
+    <!-- Numeric term grades display -->
+    <div class="grades-section">
+        <h3><i class="fas fa-table"></i> Detailed Grades</h3>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Term</th>
+                        <th>Score</th>
+                        <th>School Year</th>
+                        <th>Remarks</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ge in grade_entries %}
+                    <tr>
+                        <td>{{ ge.subject_code }}</td>
+                        <td>{{ ge.subject_name }}</td>
+                        <td>{{ ge.term }}</td>
+                        <td><span class="badge badge-{{ 'success' if ge.score|int >= 75 else 'warning' if ge.score|int >= 70 else 'danger' }}">{{ ge.score }}</span></td>
+                        <td>{{ ge.school_year or 'N/A' }}</td>
+                        <td>{{ ge.remarks or 'N/A' }}</td>
+                        <td>
+                            {% if ge.score|int >= 90 %}
+                            <span class="status-badge excellent">Excellent</span>
+                            {% elif ge.score|int >= 85 %}
+                            <span class="status-badge good">Good</span>
+                            {% elif ge.score|int >= 80 %}
+                            <span class="status-badge satisfactory">Satisfactory</span>
+                            {% elif ge.score|int >= 75 %}
+                            <span class="status-badge fair">Fair</span>
+                            {% else %}
+                            <span class="status-badge needs-improvement">Needs Improvement</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% elif grades %}
+    <!-- Grades Display -->
+    {% if gpa is defined %}
+    <div class="gpa-card">
+        <div class="gpa-display">
+            <h2>GPA</h2>
+            <div class="gpa-value">{{ gpa }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Subject Code</th>
+                    <th>Subject Name</th>
+                    <th>Units</th>
+                    <th>Grade</th>
+                    <th>Semester</th>
+                    <th>School Year</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grade in grades %}
+                <tr>
+                    <td>{{ grade.subject_code }}</td>
+                    <td>{{ grade.subject_name }}</td>
+                    <td>{{ grade.units }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if grade.grade in ['A', 'B'] else 'warning' if grade.grade == 'C' else 'danger' }}">
+                            {{ grade.grade }}
+                        </span>
+                    </td>
+                    <td>{{ grade.semester or 'N/A' }}</td>
+                    <td>{{ grade.school_year or 'N/A' }}</td>
+                    <td>{{ grade.remarks or 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% elif children %}
+    <!-- Parent View - Select Child -->
+    <div class="children-grid">
+        {% for child in children %}
+        <div class="child-card">
+            <div class="child-avatar">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h3>{{ child.first_name }} {{ child.last_name }}</h3>
+            <p>{{ child.student_id }}</p>
+            <a href="{{ url_for('view_child_grades', student_id=child.id) }}" class="btn btn-primary btn-block">
+                <i class="fas fa-chart-line"></i> View Grades
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-chart-line"></i>
+        <p>No grades available</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

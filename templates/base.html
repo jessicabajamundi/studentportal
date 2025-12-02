@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Portal System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher_dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+    <style>
+        .nav-toggle {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    {% if session.user_id %}
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="nav-toggle" type="button" aria-label="Toggle navigation" data-sidebar-toggle>
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="nav-brand">
+                {% if session.user_role == 'parent' %}
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"
+                    style="width:28px;height:28px;object-fit:contain;margin-right:8px;">
+                <span>Parent Portal</span>
+                {% elif session.user_role == 'teacher' %}
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"
+                    style="width:36px;height:36px;object-fit:contain;margin-right:10px;">
+                <span>Teacher Portal</span>
+                {% elif session.user_role == 'admin' %}
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"
+                    style="width:32px;height:32px;object-fit:contain;margin-right:8px;">
+                <span>Admin Portal</span>
+                {% else %}
+                <i class="fas fa-graduation-cap"></i>
+                <span>Student Portal</span>
+                {% endif %}
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-user">
+                <div class="user-menu" data-user-menu>
+                    <button type="button" class="user-btn" data-user-toggle>
+                        {% if session.avatar %}
+                        <img src="/{{ session.avatar }}" alt="Avatar" class="avatar-circle"
+                            style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+                        {% else %}
+                        <span class="avatar-circle">{{ session.username[:1]|upper }}</span>
+                        {% endif %}
+                        <span class="user-name">{{ session.username }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown">
+                        {% if session.user_role == 'parent' %}
+                        <a href="{{ url_for('parent_profile') }}"><i class="fas fa-id-card"></i> Profile</a>
+                        {% else %}
+                        <a href="{{ url_for('profile') }}"><i class="fas fa-id-card"></i> Profile</a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="app-layout">
+        <div class="sidebar-hover-zone" data-sidebar-hover></div>
+        <aside class="sidebar" data-sidebar>
+            <div class="sidebar-header">
+                <span class="sidebar-title">Navigation</span>
+            </div>
+            <ul class="nav-menu sidebar-menu">
+                <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+                {% if session.user_role in ['student','parent'] %}
+                <li><a href="{{ url_for('grades') }}" class="nav-link"><i class="fas fa-chart-line"></i> Grades</a></li>
+                <li><a href="{{ url_for('attendance') }}" class="nav-link"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+                <li><a href="{{ url_for('schedule') }}" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                {% if session.user_role == 'student' %}
+                <li><a href="{{ url_for('enrollment') }}" class="nav-link"><i class="fas fa-book"></i> Enrollment</a></li>
+                {% endif %}
+                {% elif session.user_role == 'teacher' %}
+                <li><a href="{{ url_for('teacher_students') }}" class="nav-link"><i class="fas fa-users"></i> Students</a></li>
+                <li><a href="{{ url_for('teacher_archived_students') }}" class="nav-link"><i class="fas fa-box-archive"></i> Archived</a></li>
+                <li><a href="{{ url_for('teacher_grades') }}" class="nav-link"><i class="fas fa-chart-line"></i> Grades</a></li>
+                <li><a href="{{ url_for('teacher_attendance') }}" class="nav-link"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+                <li><a href="{{ url_for('teacher_schedule') }}" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                {% endif %}
+                {% if session.user_role == 'admin' %}
+                <li><a href="{{ url_for('admin_teachers') }}" class="nav-link"><i class="fas fa-user-tie"></i> Manage Teachers</a></li>
+                <li><a href="{{ url_for('admin_courses') }}" class="nav-link"><i class="fas fa-book"></i> Manage Courses</a></li>
+                <li><a href="{{ url_for('admin_archived_teachers') }}" class="nav-link"><i class="fas fa-box-archive"></i> Archived Teachers</a></li>
+                {% endif %}
+            </ul>
+        </aside>
+        <div class="sidebar-overlay" data-sidebar-overlay></div>
+        <div class="app-main">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <i
+                        class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' if category == 'danger' else 'info-circle' }}"></i>
+                    {{ message }}
+                    <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <main class="main-content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Global popup alert (SweetAlert-style) -->
+    <div id="popupAlert" class="popup-alert" aria-hidden="true">
+        <div class="popup-backdrop"></div>
+        <div class="popup-dialog">
+            <button type="button" class="popup-close" data-popup-close>&times;</button>
+            <div class="popup-icon" data-popup-icon></div>
+            <h3 class="popup-title" data-popup-title></h3>
+            <p class="popup-message" data-popup-message></p>
+            <button type="button" class="btn btn-primary btn-block" data-popup-ok>OK</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

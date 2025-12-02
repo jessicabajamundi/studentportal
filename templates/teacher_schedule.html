@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher - Schedule{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-alt"></i> Create Schedule</h1>
+        <p>Supports Face-to-Face and Online classes.</p>
+    </div>
+
+    {% if message %}
+    <div class="alert alert-{{ message[0] }}">{{ message[1] }}</div>
+    {% endif %}
+
+    <form method="POST" class="login-form">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Course</label>
+                <select name="course_id" required>
+                    <option value="">Select course</option>
+                    {% for c in courses %}
+                    <option value="{{ c.id }}">{{ c.course_code }} - {{ c.course_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <select name="subject_id" required>
+                    <option value="">Select subject</option>
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}">{{ s.subject_code }} - {{ s.subject_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Day of Week</label>
+                <select name="day_of_week" required>
+                    {% for d in ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] %}
+                    <option value="{{ d }}">{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Start Time</label>
+                <input type="time" name="start_time" required>
+            </div>
+            <div class="form-group">
+                <label>End Time</label>
+                <input type="time" name="end_time" required>
+            </div>
+            <div class="form-group">
+                <label>Modality</label>
+                <select name="modality" id="modality" required onchange="toggleModalityFields()">
+                    <option value="f2f">Face-to-Face</option>
+                    <option value="online">Online</option>
+                </select>
+            </div>
+            <div class="form-group" id="roomField">
+                <label>Room</label>
+                <input type="text" name="room" placeholder="e.g., Room 101">
+            </div>
+            <div class="form-group" id="linkField" style="display:none;">
+                <label>Meeting Link</label>
+                <input type="url" name="meeting_link" placeholder="e.g., https://zoom.us/j/...">
+            </div>
+        </div>
+        <button class="btn btn-primary"><i class="fas fa-save"></i> Save Schedule</button>
+    </form>
+
+    <div class="calendar-card" style="margin-top:1rem; background:#fff; border-radius:12px; padding:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <h2><i class="fas fa-calendar-check"></i> My Weekly Calendar</h2>
+        <div id="teacherCalendar"></div>
+    </div>
+
+    {% if recent %}
+    <div class="dashboard-section">
+        <h2><i class="fas fa-calendar"></i> Recent Entries</h2>
+        <div class="table-container">
+            <table class="data-table" id="calendarTable">
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Subject</th>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Room/Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in recent %}
+                    <tr>
+                        <td>{{ r.course_code }}</td>
+                        <td>{{ r.subject_name }}</td>
+                        <td>{{ r.day_of_week }}</td>
+                        <td>{{ r.start_time }} - {{ r.end_time }}</td>
+                        <td>{{ r.room }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script>
+function toggleModalityFields(){
+    const val = document.getElementById('modality').value;
+    document.getElementById('roomField').style.display = val === 'f2f' ? 'block' : 'none';
+    document.getElementById('linkField').style.display = val === 'online' ? 'block' : 'none';
+}
+document.addEventListener('DOMContentLoaded', function(){
+    const el = document.getElementById('teacherCalendar');
+    if (!el) return;
+    const cal = new FullCalendar.Calendar(el, {
+        initialView: 'timeGridWeek',
+        height: 'auto',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'timeGridWeek,dayGridMonth' },
+        events: '/api/teacher/schedule/events',
+        eventDidMount: function(info){
+            if (info.event.extendedProps && info.event.extendedProps.room) {
+                info.el.setAttribute('title', 'Room/Link: ' + info.event.extendedProps.room);
+            }
+        }
+    });
+    cal.render();
+});
+</script>
+{% endblock %}
+
+{% endblock %}

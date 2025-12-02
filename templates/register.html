@@ -1,0 +1,161 @@
+{% set data = form_data if form_data else {} %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Student Portal System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="modern-register-container">
+        <!-- Left Panel -->
+        <div class="register-left-panel">
+            <div class="shape shape-dots"></div>
+            <div class="quote-container">
+                <i class="fas fa-quote-left quote-icon"></i>
+                <h1 class="quote-text">Let's Make it Happen Together!</h1>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="register-right-panel">
+            <div class="top-nav-link">
+                Already have an account? <a href="{{ url_for('login') }}">Sign in here!</a>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"
+                    style="max-width: 150px; height: auto;">
+            </div>
+
+            <h2 class="register-title">Create An Account</h2>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="register-form-grid">
+                    <div class="form-group-modern">
+                        <label>First Name</label>
+                        <input type="text" name="first_name" value="{{ data.get('first_name', '') }}" placeholder="Juan"
+                            required>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Middle Name</label>
+                        <input type="text" name="middle_name" value="{{ data.get('middle_name', '') }}"
+                            placeholder="Dela" required>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Last Name</label>
+                        <input type="text" name="last_name" value="{{ data.get('last_name', '') }}" placeholder="Cruz"
+                            required>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Email</label>
+                        <input type="email" name="email" value="{{ data.get('email', '') }}"
+                            placeholder="juandelacruzemail@gmail.com" required>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Username</label>
+                        <input type="text" name="username" value="{{ data.get('username', '') }}"
+                            placeholder="username123" required>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Sex</label>
+                        <select name="gender" required>
+                            <option value="">Select Sex</option>
+                            <option value="Male" {% if data.get('gender')=='Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if data.get('gender')=='Female' %}selected{% endif %}>Female
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>LRN</label>
+                        <input type="text" name="lrn" value="{{ data.get('lrn', '') }}"
+                            placeholder="Learner Reference Number" required>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Student Type</label>
+                        <select name="student_type" required>
+                            <option value="New Student" {% if data.get('student_type')=='New Student' %}selected{% endif
+                                %}>New Student</option>
+                            <option value="Transferee" {% if data.get('student_type')=='Transferee' %}selected{% endif
+                                %}>Transferee</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Program</label>
+                        <select name="course_id" required>
+                            <option value="">Select Program</option>
+                            <optgroup label="Junior High School">
+                                {% for course in courses if course.course_code.startswith('JHS') %}
+                                <option value="{{ course.id }}" {% if data.get('course_id') and
+                                    data.get('course_id')|int==course.id %}selected{% endif %}>
+                                    {{ course.course_name }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Senior High School">
+                                {% for course in courses if course.course_code in ['STEM','ABM','HUMSS','ICT'] %}
+                                <option value="{{ course.id }}" {% if data.get('course_id') and
+                                    data.get('course_id')|int==course.id %}selected{% endif %}>
+                                    {{ course.course_code }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Year Level</label>
+                        <select name="year_level" required>
+                            <option value="">Select Level</option>
+                            {% for level in range(7, 13) %}
+                            <option value="{{ level }}" {% if data.get('year_level') and
+                                data.get('year_level')|int==level %}selected{% endif %}>Grade {{ level }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Create Password</label>
+                        <input type="password" name="password" placeholder="••••••••••••" required>
+                    </div>
+                    <div class="form-group-modern">
+                        <label>Confirm Password</label>
+                        <input type="password" name="confirm_password" placeholder="••••••••••••" required>
+                    </div>
+                </div>
+
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms" style="margin:0; font-weight:600;">Creating your account and you accepting <a
+                            href="#" style="color:#2D3250; text-decoration:underline;">Terms & Conditions</a>.</label>
+                </div>
+
+                <button type="submit" class="btn-register-modern">Create Account</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Student Portal System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="modern-register-container">
+        <!-- Left Panel -->
+        <div class="register-left-panel">
+            <div class="shape shape-dots"></div>
+            <div class="quote-container">
+                <i class="fas fa-user-graduate quote-icon"></i>
+                <h1 class="quote-text">Welcome Back Students!</h1>
+                <p style="font-size: 1.2rem; margin-top: 1rem; opacity: 0.9;">Sign in to access your portal.</p>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="register-right-panel">
+            <!-- Top link removed -->
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"
+                    style="max-width: 150px; height: auto;">
+            </div>
+
+            <h2 class="register-title">Sign In</h2>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="register-form-grid" style="grid-template-columns: 1fr;">
+                    <div class="form-group-modern">
+                        <label>Username or Student ID</label>
+                        <input type="text" name="username" placeholder="Enter your username" required autofocus>
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="••••••••••••" required>
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-bottom: 1rem;">
+                    <a href="{{ url_for('forgot_password') }}"
+                        style="color: #2D3250; font-size: 0.9rem; font-weight: 600; text-decoration: none;">Forgot
+                        Password?</a>
+                </div>
+
+                <button type="submit" class="btn-register-modern">Sign In</button>
+
+                <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: #2D3250;">
+                    <p style="margin-bottom: 0.5rem;">Student? <a href="{{ url_for('register') }}"
+                            style="font-weight: 700; text-decoration: underline; color: #2D3250;">Register here</a></p>
+                    <p>Parent? <a href="{{ url_for('register_parent') }}"
+                            style="font-weight: 700; text-decoration: underline; color: #2D3250;">Register here</a></p>
+                </div>
+
+                <div style="margin-top: 2rem; font-size: 0.8rem; color: #2D3250; opacity: 0.8;">
+                    @copyright 2030. Company inc ltd.
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

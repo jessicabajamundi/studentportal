@@ -1,0 +1,674 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Student Portal System{% endblock %}
+
+{% block head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h1><i class="fas fa-home"></i> Dashboard</h1>
+        <p>Welcome back, {{ session.username }}!</p>
+    </div>
+
+    {% if session.user_role == 'teacher' %}
+    <div class="teacher-dashboard-container">
+        <!-- Navigation Cards Row -->
+        <div class="stats-row">
+            <a href="{{ url_for('teacher_students') }}" class="stat-box stat-yellow" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>{{ teacher_totals.students or 0 }}</h3>
+                <p>Students</p>
+            </a>
+            <a href="{{ url_for('teacher_archived_students') }}" class="stat-box stat-orange" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-box-archive" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>Archived</h3>
+                <p>Records</p>
+            </a>
+            <a href="{{ url_for('teacher_grades') }}" class="stat-box stat-green" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-chart-line" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>Grades</h3>
+                <p>Manage</p>
+            </a>
+            <a href="{{ url_for('teacher_attendance') }}" class="stat-box stat-teal" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-calendar-check" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>Attendance</h3>
+                <p>Track</p>
+            </a>
+            <a href="{{ url_for('teacher_schedule') }}" class="stat-box stat-purple" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-calendar-alt" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>Schedule</h3>
+                <p>View</p>
+            </a>
+            <a href="{{ url_for('manage_announcements') }}" class="stat-box stat-red" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-bullhorn" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>Announcements</h3>
+                <p>Manage</p>
+            </a>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+            <!-- Pie Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-pie"></i> Breakdown of Class Mastery</h4>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="masteryChart"></canvas>
+                </div>
+            </div>
+            <!-- Bar Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-bar"></i> {{ chart_title or 'Class Performance' }}</h4>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lists Row -->
+        <div class="lists-row">
+            <!-- Top Performers -->
+            <div class="list-card">
+                <div class="list-header">
+                    <h5><i class="fas fa-trophy"></i> Top Performers</h5>
+                </div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <div class="list-avatar"><i class="fas fa-user"></i></div>
+                        <div class="list-info">
+                            <h6>Student 01</h6>
+                            <p>Grade: 98%</p>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-avatar"><i class="fas fa-user"></i></div>
+                        <div class="list-info">
+                            <h6>Student 02</h6>
+                            <p>Grade: 96%</p>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-avatar"><i class="fas fa-user"></i></div>
+                        <div class="list-info">
+                            <h6>Student 03</h6>
+                            <p>Grade: 95%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Need Help -->
+            <div class="list-card">
+                <div class="list-header">
+                    <h5><i class="fas fa-exclamation-circle"></i> Need Help</h5>
+                </div>
+                <div class="list-content">
+                    <div class="list-item">
+                        <div class="list-avatar" style="color: #e74c3c; background: #fadbd8;"><i
+                                class="fas fa-user"></i></div>
+                        <div class="list-info">
+                            <h6>Student 04</h6>
+                            <p>Grade: 72%</p>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-avatar" style="color: #e74c3c; background: #fadbd8;"><i
+                                class="fas fa-user"></i></div>
+                        <div class="list-info">
+                            <h6>Student 05</h6>
+                            <p>Grade: 68%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% elif session.user_role == 'student' and student %}
+    <!-- Student Dashboard -->
+    <div class="dashboard-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ student.first_name }} {{ student.last_name }}</h3>
+                <p>{{ student.course_name }}</p>
+            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Year {{ student.year_level }}</h3>
+                <p>Section {{ student.section }}</p>
+            </div>
+        </div>
+
+        {% if attendance_summary %}
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ attendance_summary.present or 0 }}</h3>
+                <p>Days Present</p>
+            </div>
+        </div>
+
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ attendance_summary.absent or 0 }}</h3>
+                <p>Days Absent</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Announcements Section -->
+    {% if announcements %}
+    <div class="dashboard-section">
+        <h2><i class="fas fa-bullhorn"></i> Announcements</h2>
+        <div class="announcements-container">
+            {% for announcement in announcements %}
+            <div class="announcement-card priority-{{ announcement.priority }}">
+                <div class="announcement-header">
+                    <h3>{{ announcement.title }}</h3>
+                    <span class="priority-badge priority-{{ announcement.priority }}">
+                        {{ announcement.priority|title }}
+                    </span>
+                </div>
+                <div class="announcement-content">
+                    <p>{{ announcement.content }}</p>
+                </div>
+                <div class="announcement-footer">
+                    <small><i class="fas fa-user"></i> {{ announcement.posted_by_name }} • 
+                    <i class="fas fa-calendar"></i> {{ announcement.created_at.strftime('%b %d, %Y') }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Grades Cards Section -->
+    {% if recent_grades %}
+    <div class="dashboard-section">
+        <h2><i class="fas fa-chart-line"></i> Your Recent Grades</h2>
+        <div class="grades-grid">
+            {% for grade in recent_grades %}
+            <div class="grade-card">
+                <div class="grade-header">
+                    <h4>{{ grade.subject_name }}</h4>
+                    <span class="grade-type">{{ grade.grade_type }}</span>
+                </div>
+                <div class="grade-score">
+                    {% if grade.grade_type == 'Numeric Grade' %}
+                        <span class="score-numeric {{ 'excellent' if grade.score|int >= 90 else 'good' if grade.score|int >= 80 else 'average' if grade.score|int >= 75 else 'poor' }}">
+                            {{ grade.score }}%
+                        </span>
+                    {% else %}
+                        <span class="score-letter {{ 'excellent' if grade.score in ['A', 'A+', 'A-'] else 'good' if grade.score in ['B+', 'B', 'B-'] else 'average' if grade.score in ['C+', 'C'] else 'poor' }}">
+                            {{ grade.score }}
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="grade-details">
+                    <p><i class="fas fa-tag"></i> {{ grade.term or 'N/A' }}</p>
+                    <p><i class="fas fa-calendar-alt"></i> {{ grade.school_year or 'N/A' }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts Section for Students -->
+    {% if session.user_role == 'student' %}
+    <div class="dashboard-section">
+        <h2><i class="fas fa-chart-pie"></i> Your Performance Analytics</h2>
+        <div class="charts-row">
+            <!-- Grade Distribution Pie Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-pie"></i> Grade Distribution</h4>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="gradeDistributionChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Attendance Line Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-line"></i> Attendance Trend</h4>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="attendanceTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="charts-row">
+            <!-- Subject Performance Bar Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-bar"></i> Subject Performance</h4>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="subjectPerformanceChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Grade Progress Line Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-line"></i> Grade Progress Over Time</h4>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="gradeProgressChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% elif session.user_role == 'parent' and children %}
+    <!-- Parent Dashboard -->
+    <div class="dashboard-section">
+        <h2><i class="fas fa-users"></i> Your Children</h2>
+        <div class="children-grid">
+            {% for child in children %}
+            <div class="child-card">
+                <div class="child-avatar">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3>{{ child.first_name }} {{ child.last_name }}</h3>
+                <p>{{ child.course_name }}</p>
+                <div class="child-actions">
+                    <a href="{{ url_for('view_child_grades', student_id=child.id) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-chart-line"></i> View Grades
+                    </a>
+                    <a href="{{ url_for('view_child_attendance', student_id=child.id) }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-calendar-check"></i> View Attendance
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Charts Section for Parents -->
+    {% if chart_data %}
+    <div class="dashboard-section">
+        <h2><i class="fas fa-chart-pie"></i> Children Performance Analytics</h2>
+        <div class="charts-row">
+            <!-- Grade Distribution Pie Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-pie"></i> Overall Grade Distribution</h4>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="parentGradeDistributionChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Children Performance Bar Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-bar"></i> Children Average Performance</h4>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="childrenPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% elif session.user_role == 'admin' %}
+    <!-- Admin Dashboard -->
+    <div class="teacher-dashboard-container">
+        <!-- Navigation Cards Row -->
+        <div class="stats-row">
+            <a href="{{ url_for('admin_teachers') }}" class="stat-box stat-yellow" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-user-tie" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>{{ total_teachers or 0 }}</h3>
+                <p>Manage Teachers</p>
+            </a>
+            <a href="{{ url_for('admin_courses') }}" class="stat-box stat-teal" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-book" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>{{ total_courses or 0 }}</h3>
+                <p>Manage Courses</p>
+            </a>
+            <a href="{{ url_for('admin_students') }}" class="stat-box stat-green" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>{{ total_students or 0 }}</h3>
+                <p>Students</p>
+            </a>
+            <a href="{{ url_for('admin_archived_teachers') }}" class="stat-box stat-orange" style="text-decoration:none; color:inherit; cursor:pointer;">
+                <i class="fas fa-box-archive" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <h3>{{ archived_teachers or 0 }}</h3>
+                <p>Archived Teachers</p>
+            </a>
+        </div>
+
+        <!-- Admin Analytics Charts -->
+        <div class="charts-row" style="margin-top: 2rem;">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-bar"></i> Students per Course</h4>
+                </div>
+                <div style="height: 320px; position: relative;">
+                    <canvas id="adminStudentsPerCourse"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h4><i class="fas fa-chart-pie"></i> Users by Role</h4>
+                </div>
+                <div style="height: 320px; position: relative;">
+                    <canvas id="adminUsersPerRole"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+{% if session.user_role == 'teacher' %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mastery Chart (Pie) - Dummy Data for Visual Match
+        const ctxMastery = document.getElementById('masteryChart');
+        if (ctxMastery) {
+            new Chart(ctxMastery, {
+                type: 'pie',
+                data: {
+                    labels: ['Mastery', 'Approaching', 'Needs Help', 'Failing'],
+                    datasets: [{
+                        data: [30, 40, 15, 10],
+                        backgroundColor: ['#9acd32', '#d4ac0d', '#e67e22', '#c0392b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Performance Chart (Bar/Line) - Real Data
+        const ctxPerf = document.getElementById('performanceChart');
+        // eslint-disable-next-line no-undef
+        // @ts-ignore
+        const chartData = {{ teacher_chart_json | safe }};
+
+        if (ctxPerf && chartData && chartData.labels) {
+            new Chart(ctxPerf, {
+                type: 'bar', // Can be 'line' if preferred
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Students',
+                        data: chartData.values,
+                        backgroundColor: '#3498db',
+                        borderColor: '#2980b9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% elif session.user_role == 'admin' %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // eslint-disable-next-line no-undef
+        const adminData = {{ admin_chart_json | safe }};
+
+        // Students per Course (bar chart)
+        const ctxCourse = document.getElementById('adminStudentsPerCourse');
+        if (ctxCourse && adminData && adminData.students_per_course) {
+            new Chart(ctxCourse, {
+                type: 'bar',
+                data: {
+                    labels: adminData.students_per_course.labels,
+                    datasets: [{
+                        label: 'Students',
+                        data: adminData.students_per_course.values,
+                        backgroundColor: '#4f46e5',
+                        borderColor: '#3730a3',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Users per Role (pie chart)
+        const ctxRole = document.getElementById('adminUsersPerRole');
+        if (ctxRole && adminData && adminData.users_per_role) {
+            new Chart(ctxRole, {
+                type: 'pie',
+                data: {
+                    labels: adminData.users_per_role.labels,
+                    datasets: [{
+                        data: adminData.users_per_role.values,
+                        backgroundColor: ['#22c55e', '#3b82f6', '#f97316', '#a855f7']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% elif session.user_role == 'student' %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart data from backend
+        const chartData = {{ chart_data | safe }};
+        
+        // Grade Distribution Pie Chart
+        const ctxGradeDist = document.getElementById('gradeDistributionChart');
+        if (ctxGradeDist && chartData.grade_distribution) {
+            new Chart(ctxGradeDist, {
+                type: 'pie',
+                data: {
+                    labels: chartData.grade_distribution.labels,
+                    datasets: [{
+                        data: chartData.grade_distribution.values,
+                        backgroundColor: ['#22c55e', '#3b82f6', '#f97316', '#ef4444', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Attendance Trend Line Chart
+        const ctxAttendance = document.getElementById('attendanceTrendChart');
+        if (ctxAttendance && chartData.attendance_trend) {
+            new Chart(ctxAttendance, {
+                type: 'line',
+                data: {
+                    labels: chartData.attendance_trend.labels,
+                    datasets: [{
+                        label: 'Attendance Rate (%)',
+                        data: chartData.attendance_trend.values,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Subject Performance Bar Chart
+        const ctxSubject = document.getElementById('subjectPerformanceChart');
+        if (ctxSubject && chartData.subject_performance) {
+            new Chart(ctxSubject, {
+                type: 'bar',
+                data: {
+                    labels: chartData.subject_performance.labels,
+                    datasets: [{
+                        label: 'Average Grade (%)',
+                        data: chartData.subject_performance.values,
+                        backgroundColor: ['#22c55e', '#3b82f6', '#f97316', '#ef4444', '#8b5cf6', '#06b6d4']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Grade Progress Line Chart
+        const ctxProgress = document.getElementById('gradeProgressChart');
+        if (ctxProgress && chartData.grade_progress) {
+            new Chart(ctxProgress, {
+                type: 'line',
+                data: {
+                    labels: chartData.grade_progress.labels,
+                    datasets: [{
+                        label: 'Average Grade (%)',
+                        data: chartData.grade_progress.values,
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% elif session.user_role == 'parent' %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart data for parent view
+        const chartData = {{ chart_data | safe }};
+        
+        // Parent Grade Distribution Pie Chart
+        const ctxParentGradeDist = document.getElementById('parentGradeDistributionChart');
+        if (ctxParentGradeDist && chartData.grade_distribution) {
+            new Chart(ctxParentGradeDist, {
+                type: 'pie',
+                data: {
+                    labels: chartData.grade_distribution.labels,
+                    datasets: [{
+                        data: chartData.grade_distribution.values,
+                        backgroundColor: ['#22c55e', '#3b82f6', '#f97316', '#ef4444', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Children Performance Bar Chart
+        const ctxChildrenPerf = document.getElementById('childrenPerformanceChart');
+        if (ctxChildrenPerf && chartData.children_performance) {
+            new Chart(ctxChildrenPerf, {
+                type: 'bar',
+                data: {
+                    labels: chartData.children_performance.labels,
+                    datasets: [{
+                        label: 'Average Grade (%)',
+                        data: chartData.children_performance.values,
+                        backgroundColor: ['#22c55e', '#3b82f6', '#f97316', '#ef4444', '#8b5cf6', '#06b6d4']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+        
+        console.log('Parent dashboard charts loaded');
+    });
+</script>
+{% endif %}
+{% endblock %}

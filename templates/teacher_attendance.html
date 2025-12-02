@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher - Attendance{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-check"></i> Mark Attendance</h1>
+    </div>
+
+    <form method="POST" class="login-form">
+        <div class="form-grid">
+            <div class="form-group">
+                <label><i class="fas fa-book"></i> Subject</label>
+                <select name="subject_id" required>
+                    <option value="">Select subject</option>
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}">{{ s.subject_code }} - {{ s.subject_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date" value="{{ request.form.get('date', current_date) }}" required>
+            </div>
+        </div>
+
+        <!-- Student List -->
+        <div class="table-responsive" style="margin-top: 1.5rem;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for st in students %}
+                    <tr>
+                        <td>
+                            <div class="list-item">
+                                <div class="list-avatar">
+                                    {% if st.avatar %}
+                                    <img src="/{{ st.avatar }}" alt="{{ st.first_name }} {{ st.last_name }}" class="avatar-circle">
+                                    {% else %}
+                                    <span class="avatar-circle">{{ (st.first_name[:1] ~ st.last_name[:1])|upper }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="list-info">
+                                    <h6>{{ st.first_name }} {{ st.last_name }}</h6>
+                                    <p>{{ st.student_id }} &middot; Grade {{ st.year_level }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="hidden" name="status_{{ st.id }}" id="status_{{ st.id }}" value="present">
+                            <div class="btn-group" style="display: flex; gap: 5px;">
+                                <button type="button" class="btn btn-xs btn-success" onclick="setStatus('{{ st.id }}', 'present')">Present</button>
+                                <button type="button" class="btn btn-xs btn-danger" onclick="setStatus('{{ st.id }}', 'absent')">Absent</button>
+                                <button type="button" class="btn btn-xs btn-warning" onclick="setStatus('{{ st.id }}', 'late')">Late</button>
+                                <button type="button" class="btn btn-xs btn-info" onclick="setStatus('{{ st.id }}', 'excused')">Excused</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="2" class="text-center">No students found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Attendance</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function setStatus(studentId, status) {
+        console.log('setStatus called:', studentId, status);
+        const hiddenField = document.getElementById('status_' + studentId);
+        if (hiddenField) {
+            hiddenField.value = status;
+            console.log('Updated hidden field to:', hiddenField.value);
+        } else {
+            console.error('Hidden field not found:', studentId);
+        }
+    }
+</script>
+
+{% if message %}
+{% set messageType = "success" if message[0] == "success" else "error" %}
+{% set messageTitle = "Success!" if message[0] == "success" else "Error!" %}
+{% set buttonColor = "#28a745" if message[0] == "success" else "#dc3545" %}
+<script>
+    var messageType = {{ messageType | tojson }};
+    var messageTitle = {{ messageTitle | tojson }};
+    var messageText = {{ message[1] | tojson }};
+    var buttonColor = {{ buttonColor | tojson }};
+    
+    Swal.fire({
+        icon: messageType,
+        title: messageTitle,
+        text: messageText,
+        confirmButtonColor: buttonColor
+    });
+</script>
+{% endif %}
+{% endblock %}
