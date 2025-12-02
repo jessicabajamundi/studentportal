@@ -131,43 +131,60 @@ def ensure_grade_entries_table():
 def init_database_on_startup():
     """Initialize database with all required tables on app startup"""
     try:
+        print("Starting database initialization...")
         db = get_db()
         cursor = db.cursor()
         
         # Check if users table exists (as a simple check if DB is initialized)
         cursor.execute("SHOW TABLES LIKE 'users'")
-        if cursor.fetchone():
-            cursor.close()
+        result = cursor.fetchone()
+        cursor.close()
+        
+        if result:
+            print("✓ Database already initialized - users table exists")
             return  # Database already initialized
         
-        cursor.close()
+        print("Database not initialized, importing schema...")
         
         # Read and execute the SQL schema file
         import os
         sql_file = os.path.join(os.path.dirname(__file__), 'database', 'updated sql.sql')
         
-        if os.path.exists(sql_file):
-            with open(sql_file, 'r', encoding='utf-8') as f:
-                sql_content = f.read()
-            
-            db = get_db()
-            cursor = db.cursor()
-            
-            # Execute each statement
-            statements = sql_content.split(';')
-            for statement in statements:
-                statement = statement.strip()
-                if statement and not statement.startswith('--') and not statement.startswith('/*'):
-                    try:
-                        cursor.execute(statement)
-                    except:
-                        pass  # Ignore errors (table exists, duplicate data, etc.)
-            
-            db.commit()
-            cursor.close()
-            print("✓ Database initialized successfully")
+        if not os.path.exists(sql_file):
+            print(f"✗ SQL file not found: {sql_file}")
+            return
+        
+        with open(sql_file, 'r', encoding='utf-8') as f:
+            sql_content = f.read()
+        
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Execute each statement
+        statements = sql_content.split(';')
+        executed = 0
+        errors = 0
+        
+        for statement in statements:
+            statement = statement.strip()
+            if statement and not statement.startswith('--') and not statement.startswith('/*'):
+                try:
+                    cursor.execute(statement)
+                    executed += 1
+                except Exception as e:
+                    errors += 1
+                    # Only log critical errors, ignore "table exists" and "duplicate key"
+                    if 'already exists' not in str(e) and 'Duplicate entry' not in str(e):
+                        print(f"Warning: {str(e)[:100]}")
+        
+        db.commit()
+        cursor.close()
+        print(f"✓ Database initialization complete - Executed: {executed}, Warnings: {errors}")
+        
     except Exception as e:
-        print(f"Database initialization warning: {e}")
+        print(f"✗ Database initialization error: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
 def get_db():
     """Get database connection"""
