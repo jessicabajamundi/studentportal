@@ -14,9 +14,6 @@ app.secret_key = 'your-secret-key-change-this-in-production'
 # Register Mobile API Blueprint
 app.register_blueprint(mobile_api)
 
-# Initialize database on app startup
-init_database_on_startup()
-
 # MySQL Configuration
 MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
 MYSQL_USER = os.getenv('MYSQL_USER', 'portal')
@@ -209,6 +206,9 @@ def close_db(e=None):
         db.close()
 
 app.teardown_appcontext(close_db)
+
+# Initialize database on app startup (after all functions are defined)
+init_database_on_startup()
 
 # Login required decorator
 def login_required(f):
