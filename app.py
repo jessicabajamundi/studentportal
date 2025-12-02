@@ -14,6 +14,9 @@ app.secret_key = 'your-secret-key-change-this-in-production'
 # Register Mobile API Blueprint
 app.register_blueprint(mobile_api)
 
+# Initialize database on app startup
+init_database_on_startup()
+
 # MySQL Configuration
 MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
 MYSQL_USER = os.getenv('MYSQL_USER', 'portal')
@@ -124,6 +127,47 @@ def ensure_grade_entries_table():
         )
     finally:
         cursor.close()
+
+def init_database_on_startup():
+    """Initialize database with all required tables on app startup"""
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Check if users table exists (as a simple check if DB is initialized)
+        cursor.execute("SHOW TABLES LIKE 'users'")
+        if cursor.fetchone():
+            cursor.close()
+            return  # Database already initialized
+        
+        cursor.close()
+        
+        # Read and execute the SQL schema file
+        import os
+        sql_file = os.path.join(os.path.dirname(__file__), 'database', 'updated sql.sql')
+        
+        if os.path.exists(sql_file):
+            with open(sql_file, 'r', encoding='utf-8') as f:
+                sql_content = f.read()
+            
+            db = get_db()
+            cursor = db.cursor()
+            
+            # Execute each statement
+            statements = sql_content.split(';')
+            for statement in statements:
+                statement = statement.strip()
+                if statement and not statement.startswith('--') and not statement.startswith('/*'):
+                    try:
+                        cursor.execute(statement)
+                    except:
+                        pass  # Ignore errors (table exists, duplicate data, etc.)
+            
+            db.commit()
+            cursor.close()
+            print("✓ Database initialized successfully")
+    except Exception as e:
+        print(f"Database initialization warning: {e}")
 
 def get_db():
     """Get database connection"""
